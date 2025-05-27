@@ -144,8 +144,14 @@ export class SocketIOProvider extends Observable<string> {
 		this.doc.on('update', this.onUpdateDoc)
 
 		this.socket.on('connect', () => {
-			this.socket.emit('join-room', roomName)
-			this.onSocketConnection(resyncInterval)
+			this.emit('status', [{status: 'connecting'}])
+			this.socket.emit('join-room', roomName, auth, (success: boolean) => {
+				if (success) {
+					this.onSocketConnection(resyncInterval)
+				} else {
+					this.emit('error', [{message: 'Failed to join room'}])
+				}
+			})
 		})
 
 		this.socket.on('disconnect', (event) => this.onSocketDisconnection(event))
